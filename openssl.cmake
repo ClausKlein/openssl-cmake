@@ -66,7 +66,7 @@ ExternalProject_Add(
     #--Install step---------------
     USES_TERMINAL_INSTALL TRUE
     INSTALL_COMMAND
-        ${MAKE_PROGRAM} -C <SOURCE_DIR> # XXX -f ms\\\\nt.mak install
+        ${MAKE_PROGRAM} -C <SOURCE_DIR> install_sw # XXX -f ms\\\\nt.mak install
     #--Logging -------------------
     LOG_DOWNLOAD OFF
     # LOG_CONFIGURE ${OPENSSL_WRITE_LOG}
