@@ -54,14 +54,14 @@ if(MSVC)
     set(OPENSSL_LIBRARY_PREFIX lib)
 endif()
 
-add_executable(my_app main.c)
+add_executable(my_app test.c easy-tls.c)
 target_include_directories(my_app PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_directories(my_app PRIVATE ${OPENSSL_LIB_DIR})
 target_link_libraries(
     my_app
     PRIVATE
-        ssleay32${ZLIB_DEBUG_POSTFIX}
-        libeay32${ZLIB_DEBUG_POSTFIX}
+        ${OPENSSL_LIBRARY_PREFIX}ssl${ZLIB_DEBUG_POSTFIX}
+        ${OPENSSL_LIBRARY_PREFIX}crypto${ZLIB_DEBUG_POSTFIX}
         ${OPENSSL_LINK_LIBRARIES}
         ${ZLIB_LINK_LIBRARIES}
 )
@@ -75,13 +75,13 @@ if(ZLIB_DEBUG_POSTFIX)
     add_custom_command(
         TARGET openssl
         POST_BUILD
-        COMMAND ${CMAKE_SOURCE_DIR}/build.bat
+        # XXX COMMAND ${CMAKE_SOURCE_DIR}/build.bat
         COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different ssleay32${_CMAKE_LINK_LIBRARY_SUFFIX}
-            ssleay32${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
+            ${CMAKE_COMMAND} -E copy_if_different libssl${_CMAKE_LINK_LIBRARY_SUFFIX}
+            libssl${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
         COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different libeay32${_CMAKE_LINK_LIBRARY_SUFFIX}
-            libeay32${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
+            ${CMAKE_COMMAND} -E copy_if_different libcrypto${_CMAKE_LINK_LIBRARY_SUFFIX}
+            libcrypto${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
         VERBATIM
         WORKING_DIRECTORY ${OPENSSL_LIB_DIR}
     )

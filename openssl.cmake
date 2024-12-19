@@ -15,10 +15,23 @@ else()
     set(OPENSSL_WRITE_LOG ON)
 endif()
 
+set(CONFIG_DEBUG_PREFIX)
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(CONFIG_DEBUG_PREFIX debug-)
+endif()
+
 if(MSVC)
     set(MAKE_PROGRAM nmake)
+    set(OS_CONFIG_SETUP VC-WIN32)
 else()
     set(MAKE_PROGRAM make -j8)
+    if(LINUX)
+        set(OS_CONFIG_SETUP linux-x86_64)
+    elseif(APPLE)
+        set(OS_CONFIG_SETUP darwin64-x86_64-cc)
+    else()
+        message(FATAL_ERROR "OS is not supported")
+    endif()
 endif()
 
 find_program(PERL_PROGRAM perl REQUIRED)
@@ -35,30 +48,28 @@ ExternalProject_Add(
     #--Update/Patch step----------
     #--Configure step-------------
     USES_TERMINAL_CONFIGURE TRUE
+    # see build/src/openssl/Configure
+    # and build/src/openssl-stamp/openssl-configure-Debug.cmake
+    #     build/src/openssl-stamp/openssl-configure-err.log
+    #     build/src/openssl-stamp/openssl-configure-out.log
+    # FIXME: --no-shared # XXX --static # TODO: depends on BUILD_SHARED_LIBS
     CONFIGURE_COMMAND
-        # see build/src/openssl/Configure
-        # and build/src/openssl-stamp/openssl-configure-Debug.cmake
-        #     build/src/openssl-stamp/openssl-configure-err.log
-        #     build/src/openssl-stamp/openssl-configure-out.log
-        # FIXME: --no-shared # XXX --static # TODO: depends on BUILD_SHARED_LIBS
-        ### cd <SOURCE_DIR> &&
-        ### ${PERL_PROGRAM} Configure
-        ### $<LIST:TRANSFORM,$<CONFIG>,TOLOWER>-VC-WIN32 # darwin64-x86_64-cc, or linux-x86_64, or VC-WIN32
-        ### no-comp no-asm no-hw no-krb5
-        ### --prefix=${CMAKE_INSTALL_PREFIX}
-        ### # --openssldir=${CMAKE_INSTALL_PREFIX}/etc/ssl #
-        ### && ms\\\\do_nt.bat
-        cd # cd ${CMAKE_SOURCE_DIR} && build.bat
+        cd <SOURCE_DIR> && ${PERL_PROGRAM} Configure ${CONFIG_DEBUG_PREFIX}${OS_CONFIG_SETUP} no-asm no-hw no-krb5
+        --prefix=${CMAKE_INSTALL_PREFIX}
+    ### # --openssldir=${CMAKE_INSTALL_PREFIX}/etc/ssl #
+    # XXX && ms\\\\do_nt.bat
     # linux-aarch64
     #--Build step-----------------
     USES_TERMINAL_BUILD TRUE
-    BUILD_COMMAND echo ${MAKE_PROGRAM} -C <SOURCE_DIR> -f ms\\\\nt.mak
+    BUILD_COMMAND
+        ${MAKE_PROGRAM} -C <SOURCE_DIR> # XXX -f ms\\\\nt.mak
     #--Install step---------------
     USES_TERMINAL_INSTALL TRUE
-    INSTALL_COMMAND echo ${MAKE_PROGRAM} -C <SOURCE_DIR> -f ms\\\\nt.mak install
+    INSTALL_COMMAND
+        ${MAKE_PROGRAM} -C <SOURCE_DIR> # XXX -f ms\\\\nt.mak install
     #--Logging -------------------
     LOG_DOWNLOAD OFF
-    LOG_CONFIGURE ${OPENSSL_WRITE_LOG}
+    # LOG_CONFIGURE ${OPENSSL_WRITE_LOG}
     LOG_BUILD ${OPENSSL_WRITE_LOG}
     LOG_INSTALL OFF
 )
