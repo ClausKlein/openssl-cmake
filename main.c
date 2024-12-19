@@ -286,9 +286,7 @@ int main(int argc, char **argv)
         client_skt = create_socket(false);
         /* Set up connect address */
         addr.sin_family = AF_INET;
-#ifndef WIN32
         inet_pton(AF_INET, rem_server_ip, &addr.sin_addr.s_addr);
-#endif
         addr.sin_port = htons(server_port);
         /* Do TCP connect with server */
         if (connect(client_skt, (struct sockaddr*) &addr, sizeof(addr)) != 0) {

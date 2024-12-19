@@ -54,7 +54,7 @@ if(MSVC)
     set(OPENSSL_LIBRARY_PREFIX lib)
 endif()
 
-add_executable(my_app main.c)
+add_executable(my_app test.c easy-tls.c)
 target_include_directories(my_app PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_directories(my_app PRIVATE ${OPENSSL_LIB_DIR})
 target_link_libraries(
@@ -75,6 +75,7 @@ if(ZLIB_DEBUG_POSTFIX)
     add_custom_command(
         TARGET openssl
         POST_BUILD
+        # XXX COMMAND ${CMAKE_SOURCE_DIR}/build.bat
         COMMAND
             ${CMAKE_COMMAND} -E copy_if_different libssl${_CMAKE_LINK_LIBRARY_SUFFIX}
             libssl${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
@@ -85,6 +86,8 @@ if(ZLIB_DEBUG_POSTFIX)
         WORKING_DIRECTORY ${OPENSSL_LIB_DIR}
     )
 endif()
+
+return()
 
 # test if the targets are usable from the install directory
 add_test(
