@@ -60,14 +60,9 @@ jobs:
         with:
           arch: x64
 
-      - name: Set reusable strings
-        id: strings
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
       - name: Configure CMake
         run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          cmake -B build
           -D CMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D CMAKE_INSTALL_PREFIX=/tmp/install
@@ -75,8 +70,7 @@ jobs:
           -G "${{ matrix.generator }}"
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+        run: cmake --build build --config ${{ matrix.build_type }}
 
       - name: Test
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        run: ctest --build-config ${{ matrix.build_type }} --verbose --output-on-failure
+        run: ctest --test-dir build --build-config ${{ matrix.build_type }} --verbose --output-on-failure
