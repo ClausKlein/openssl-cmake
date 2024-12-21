@@ -10,10 +10,13 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -237,7 +240,12 @@ int main(int argc, char *argv[])
 
                 infobuf[r] = '\0';
                 while ((eol = strchr(info, '\n')) != NULL) {
-                    fprintf(stderr, "+++ `%.*s'\n", eol - info, info);
+                    ptrdiff_t length = eol - info;
+                    if (length > INT_MAX) {
+                        fprintf(stderr, "Error: String length too large to process.\n");
+                        break;
+                    }
+                    fprintf(stderr, "+++ `%.*s'\n", (int)length, info);
                     info = eol + 1;
                 }
                 close(infofd);
