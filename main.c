@@ -191,6 +191,7 @@ int main(int argc, char **argv)
         rem_server_ip = argv[2];
     }
 
+#if 0
     /* Create context used by both client and server */
     ssl_ctx = create_context(isServer);
 
@@ -286,9 +287,7 @@ int main(int argc, char **argv)
         client_skt = create_socket(false);
         /* Set up connect address */
         addr.sin_family = AF_INET;
-#ifndef WIN32
         inet_pton(AF_INET, rem_server_ip, &addr.sin_addr.s_addr);
-#endif
         addr.sin_port = htons(server_port);
         /* Do TCP connect with server */
         if (connect(client_skt, (struct sockaddr*) &addr, sizeof(addr)) != 0) {
@@ -370,6 +369,7 @@ exit:
         close(client_skt);
     if (server_skt != -1)
         close(server_skt);
+#endif
 
     printf("sslecho exiting\n");
 

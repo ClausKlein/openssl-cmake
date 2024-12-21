@@ -51,17 +51,26 @@ set(OPENSSL_LINK_LIBRARIES)
 if(MSVC)
     set(OPENSSL_LINK_LIBRARIES "ws2_32.lib;gdi32.lib;advapi32.lib;crypt32.lib;user32.lib")
     set(ZLIB_LINK_LIBRARIES zlib${ZLIB_DEBUG_POSTFIX})
+    set(OPENSSL_LIB_SSL ssleay32)
+    set(OPENSSL_LIB_CRYPTO libeay32)
+else()
+    set(OPENSSL_LIB_SSL ssl)
+    set(OPENSSL_LIB_CRYPTO crypto)
     set(OPENSSL_LIBRARY_PREFIX lib)
 endif()
 
-add_executable(my_app main.c)
+if(UNIX)
+    add_executable(my_app test.c easy-tls.c)
+else()
+    add_executable(my_app main.c)
+endif()
 target_include_directories(my_app PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_directories(my_app PRIVATE ${OPENSSL_LIB_DIR})
 target_link_libraries(
     my_app
     PRIVATE
-        ${OPENSSL_LIBRARY_PREFIX}ssl${ZLIB_DEBUG_POSTFIX}
-        ${OPENSSL_LIBRARY_PREFIX}crypto${ZLIB_DEBUG_POSTFIX}
+        ${OPENSSL_LIB_SSL}${ZLIB_DEBUG_POSTFIX}
+        ${OPENSSL_LIB_CRYPTO}${ZLIB_DEBUG_POSTFIX}
         ${OPENSSL_LINK_LIBRARIES}
         ${ZLIB_LINK_LIBRARIES}
 )
@@ -76,15 +85,20 @@ if(ZLIB_DEBUG_POSTFIX)
         TARGET openssl
         POST_BUILD
         COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different libssl${_CMAKE_LINK_LIBRARY_SUFFIX}
-            libssl${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
+            ${CMAKE_COMMAND} -E copy_if_different ${OPENSSL_LIBRARY_PREFIX}${OPENSSL_LIB_SSL}${_CMAKE_LINK_LIBRARY_SUFFIX}
+            ${OPENSSL_LIBRARY_PREFIX}${OPENSSL_LIB_SSL}${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
         COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different libcrypto${_CMAKE_LINK_LIBRARY_SUFFIX}
-            libcrypto${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
+            ${CMAKE_COMMAND} -E copy_if_different
+            ${OPENSSL_LIBRARY_PREFIX}${OPENSSL_LIB_CRYPTO}${_CMAKE_LINK_LIBRARY_SUFFIX}
+            ${OPENSSL_LIBRARY_PREFIX}${OPENSSL_LIB_CRYPTO}${ZLIB_DEBUG_POSTFIX}${_CMAKE_LINK_LIBRARY_SUFFIX}
         VERBATIM
         WORKING_DIRECTORY ${OPENSSL_LIB_DIR}
     )
 endif()
+
+########
+return()
+########
 
 # test if the targets are usable from the install directory
 add_test(
