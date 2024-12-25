@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27...3.31)
+cmake_minimum_required(VERSION 3.25...3.31)
 
 project(zlib_build LANGUAGES C)
 

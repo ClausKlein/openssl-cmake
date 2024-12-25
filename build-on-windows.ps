@@ -1,0 +1,15 @@
+# Change to the directory
+Set-Location -Path "build/src/openssl"
+
+# Execute the Perl command
+& "C:/Strawberry/perl/bin/perl.exe" Configure debug-VC-WIN32 no-comp no-asm no-hw no-krb5 --prefix=/tmp/install
+
+# Call the batch script
+& "ms\do_ms.bat"
+
+# Run nmake to build
+nmake -f ms\nt.mak
+
+# Install the built version
+nmake -f ms\nt.mak install
+
